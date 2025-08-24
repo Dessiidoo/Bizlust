@@ -11,6 +11,10 @@ const execAsync = promisify(exec);
 const app = express();
 app.use(cookieParser());
 
+// Parse JSON bodies (must come before routes that need body parsing)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const ADMIN_KEY = process.env.ADMIN_KEY;
 
 function requireAdmin(req: any, res: any, next: any) {
@@ -58,9 +62,6 @@ app.use(session({
   }
 }));
 
-// Parse JSON bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 async function startServer() {
   try {
