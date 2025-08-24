@@ -82,6 +82,9 @@ async function setupDatabase() {
 // Admin route setup function
 function setupAdminRoutes(app: any) {
   const ADMIN_KEY = process.env.ADMIN_KEY;
+  
+  // Import storage for admin functions
+  const { storage } = require('./storage');
 
   function requireAdmin(req: any, res: any, next: any) {
     if (!ADMIN_KEY) return res.status(500).send('Missing ADMIN_KEY');
