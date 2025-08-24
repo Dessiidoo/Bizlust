@@ -69,6 +69,12 @@ export interface IStorage {
   getUserSubscription(userId: string): Promise<Subscription | undefined>;
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: string, subscription: Partial<InsertSubscription>): Promise<Subscription | undefined>;
+  
+  // Admin methods
+  getUserCount(): Promise<number>;
+  getLeadCount(): Promise<number>;
+  getAllUsers(): Promise<User[]>;
+  getRecentActivity(): Promise<Array<{type: string, description: string, timestamp: string}>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -308,6 +314,56 @@ export class DatabaseStorage implements IStorage {
       .where(eq(subscriptions.id, id))
       .returning();
     return subscription;
+  }
+
+  // Admin methods
+  async getUserCount(): Promise<number> {
+    const result = await db.select().from(users);
+    return result.length;
+  }
+
+  async getLeadCount(): Promise<number> {
+    const result = await db.select().from(leads);
+    return result.length;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getRecentActivity(): Promise<Array<{type: string, description: string, timestamp: string}>> {
+    try {
+      // Get recent users, leads, and market insights for activity feed
+      const recentUsers = await db.select().from(users).orderBy(desc(users.createdAt)).limit(3);
+      const recentLeads = await db.select().from(leads).orderBy(desc(leads.createdAt)).limit(3);
+      const recentInsights = await db.select().from(marketInsights).orderBy(desc(marketInsights.createdAt)).limit(3);
+
+      const activities = [
+        ...recentUsers.map(user => ({
+          type: 'User Registration',
+          description: `New user ${user.firstName} ${user.lastName} joined`,
+          timestamp: user.createdAt.toISOString()
+        })),
+        ...recentLeads.map(lead => ({
+          type: 'Lead Created',
+          description: `New lead: ${lead.contactName} at ${lead.contactRole}`,
+          timestamp: lead.createdAt.toISOString()
+        })),
+        ...recentInsights.map(insight => ({
+          type: 'Market Insight',
+          description: `Market insight generated: ${insight.title}`,
+          timestamp: insight.createdAt.toISOString()
+        }))
+      ];
+
+      // Sort by timestamp and limit to 10 most recent
+      return activities
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
+    } catch (error) {
+      console.error('Error getting recent activity:', error);
+      return [];
+    }
   }
 }
 

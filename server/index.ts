@@ -112,8 +112,161 @@ function setupAdminRoutes(app: any) {
     return res.status(401).send('Invalid key');
   });
 
-  app.get('/admin', requireAdmin, (_req: any, res: any) => {
-    res.send(`<h2>LeadPro Admin</h2><p>You're in. Build your controls here.</p>`);
+  // Admin logout route
+  app.get('/admin/logout', (_req: any, res: any) => {
+    res.clearCookie('admin');
+    res.redirect('/admin/login');
+  });
+
+  // Admin users page
+  app.get('/admin/users', requireAdmin, async (_req: any, res: any) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>User Management - LeadPro Admin</title>
+          <style>
+            body { font-family: system-ui; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 1200px; margin: 0 auto; }
+            .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .btn { background: #0079F2; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+            .users-table { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #f8f9fa; font-weight: 600; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>👥 User Management</h1>
+              <a href="/admin" class="btn">← Back to Dashboard</a>
+            </div>
+            
+            <div class="users-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${users.map(user => `
+                    <tr>
+                      <td>${user.firstName} ${user.lastName}</td>
+                      <td>${user.email}</td>
+                      <td>${user.companyName || 'Not set'}</td>
+                      <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <a href="/admin/users/${user.id}" class="btn" style="padding:5px 10px;font-size:12px;">View</a>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+    } catch (error) {
+      res.send('<h2>User Management</h2><p>Loading users...</p><a href="/admin">Back to Dashboard</a>');
+    }
+  });
+
+  app.get('/admin', requireAdmin, async (_req: any, res: any) => {
+    try {
+      // Get some basic stats for the admin dashboard
+      const userCount = await storage.getUserCount();
+      const leadCount = await storage.getLeadCount();
+      const recentActivity = await storage.getRecentActivity();
+      
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>LeadPro Admin Dashboard</title>
+          <style>
+            body { font-family: system-ui; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 1200px; margin: 0 auto; }
+            .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+            .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .stat-number { font-size: 2em; font-weight: bold; color: #0079F2; }
+            .actions { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .btn { background: #0079F2; color: white; padding: 10px 20px; border: none; border-radius: 4px; margin: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+            .btn:hover { background: #0056b3; }
+            .btn-danger { background: #dc3545; }
+            .btn-danger:hover { background: #c82333; }
+            .activity { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px; }
+            .activity-item { padding: 10px 0; border-bottom: 1px solid #eee; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎯 LeadPro Admin Dashboard</h1>
+              <p>Manage your lead generation platform</p>
+              <a href="/admin/logout" class="btn btn-danger">Logout</a>
+            </div>
+            
+            <div class="stats">
+              <div class="stat-card">
+                <div class="stat-number">${userCount}</div>
+                <div>Total Users</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">${leadCount}</div>
+                <div>Total Leads</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">${recentActivity.length}</div>
+                <div>Recent Activities</div>
+              </div>
+            </div>
+            
+            <div class="actions">
+              <h3>Quick Actions</h3>
+              <a href="/admin/users" class="btn">👥 Manage Users</a>
+              <a href="/admin/leads" class="btn">📋 View All Leads</a>
+              <a href="/admin/settings" class="btn">⚙️ System Settings</a>
+              <a href="/admin/analytics" class="btn">📊 Analytics</a>
+              <a href="/admin/backup" class="btn">💾 Backup Data</a>
+            </div>
+            
+            <div class="activity">
+              <h3>Recent Activity</h3>
+              ${recentActivity.map(activity => `
+                <div class="activity-item">
+                  <strong>${activity.type}</strong> - ${activity.description}
+                  <small style="color: #666; float: right;">${new Date(activity.timestamp).toLocaleString()}</small>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Admin dashboard error:', error);
+      res.send(`
+        <div style="font-family:system-ui;max-width:600px;margin:40px auto;padding:20px;">
+          <h2>🎯 LeadPro Admin Dashboard</h2>
+          <p>Welcome to the admin panel! The dashboard is loading...</p>
+          <div style="margin-top:20px;">
+            <a href="/admin/users" style="background:#0079F2;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;margin:5px;">👥 Manage Users</a>
+            <a href="/admin/settings" style="background:#0079F2;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;margin:5px;">⚙️ Settings</a>
+            <a href="/admin/logout" style="background:#dc3545;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;margin:5px;">Logout</a>
+          </div>
+        </div>
+      `);
+    }
   });
 }
 
