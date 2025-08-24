@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Building2, User, Briefcase, Users } from "lucide-react";
+import { Building2, User, Briefcase, Users, Home } from "lucide-react";
+import { Link } from "wouter";
 
 const profileSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
@@ -134,10 +135,18 @@ export default function Profile() {
     <div className="p-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <User className="h-8 w-8" />
-            Business Profile
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <User className="h-8 w-8" />
+              Business Profile
+            </h1>
+            <Link href="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2" data-testid="link-homepage">
+                <Home className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
           <p className="text-muted-foreground mt-2">
             Help our AI understand your business so we can generate more targeted leads and insights.
           </p>

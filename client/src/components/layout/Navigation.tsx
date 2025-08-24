@@ -110,10 +110,25 @@ export function Navigation() {
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <a href="/api/logout" className="flex items-center">
+                  <button 
+                    onClick={async () => {
+                      try {
+                        await fetch('/api/auth/logout', {
+                          method: 'POST',
+                          credentials: 'include'
+                        });
+                        window.location.href = '/';
+                      } catch (error) {
+                        console.error('Logout failed:', error);
+                        window.location.href = '/';
+                      }
+                    }}
+                    className="flex items-center w-full text-left px-2 py-1.5 text-sm"
+                    data-testid="button-logout"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
-                  </a>
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
