@@ -31,10 +31,10 @@ app.get('/admin/login', (_req, res) => {
 
 app.post('/admin/login', (req, res) => {
   if (req.body?.key === ADMIN_KEY) {
-    res.cookie('admin', ADMIN_KEY, {
+    res.cookie('admin', ADMIN_KEY || '', {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
+      sameSite: 'none',
       maxAge: 7*24*60*60*1000
     });
     return res.redirect('/admin');
