@@ -24,11 +24,16 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 app.get('/admin/login', (_req, res) => {
+  const hasAdminKey = !!ADMIN_KEY;
+  const keyLength = ADMIN_KEY ? ADMIN_KEY.length : 0;
   res.send(`
     <form method="POST" action="/admin/login" style="max-width:420px;margin:40px auto;font-family:system-ui">
       <h3>LeadPro Admin</h3>
       <input name="key" type="password" placeholder="Admin Key" style="width:100%;padding:10px" />
       <button style="margin-top:10px;padding:10px 14px">Login</button>
+      <p style="font-size:12px;color:#666;margin-top:20px">
+        Debug: Key configured: ${hasAdminKey}, Length: ${keyLength}
+      </p>
     </form>
   `);
 });
