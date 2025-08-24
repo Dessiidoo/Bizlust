@@ -34,6 +34,11 @@ app.get('/admin/login', (_req, res) => {
 });
 
 app.post('/admin/login', (req, res) => {
+  console.log('Admin login attempt:');
+  console.log('- Received key:', req.body?.key);
+  console.log('- Expected key:', ADMIN_KEY);
+  console.log('- Keys match:', req.body?.key === ADMIN_KEY);
+  
   if (req.body?.key === ADMIN_KEY) {
     res.cookie('admin', ADMIN_KEY || '', {
       httpOnly: true,
