@@ -184,9 +184,12 @@ export const attachSubscriptionInfo: RequestHandler = async (req: any, res, next
       const user = await storage.getUser(userId);
       
       if (user) {
-        const tierInfo = SUBSCRIPTION_TIERS[user.subscriptionTier || "free"];
+        const userTier = user.subscriptionTier || "free";
+        const tierInfo = SUBSCRIPTION_TIERS[userTier];
+        
+        // Set both subscriptionInfo and subscriptionTier for consistency
         req.user.subscriptionInfo = {
-          tier: user.subscriptionTier || "free",
+          tier: userTier,
           status: user.subscriptionStatus || "inactive",
           expiresAt: user.subscriptionExpiresAt,
           features: tierInfo.features,
@@ -195,6 +198,9 @@ export const attachSubscriptionInfo: RequestHandler = async (req: any, res, next
             aiCredits: tierInfo.aiCredits
           }
         };
+        
+        // Also set subscriptionTier for usage limit checks
+        req.user.subscriptionTier = tierInfo;
       }
     } catch (error) {
       console.error("Error attaching subscription info:", error);
