@@ -37,6 +37,10 @@ export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getInitials = (user: any) => {
+    // If no user, don't show anything
+    if (!user) {
+      return "";
+    }
     if (user?.firstName && user?.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`;
     }
