@@ -165,7 +165,7 @@ async function setupAdminRoutes(app: any) {
                       <td>${user.firstName} ${user.lastName}</td>
                       <td>${user.email}</td>
                       <td>${user.companyName || 'Not set'}</td>
-                      <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
                       <td>
                         <a href="/admin/users/${user.id}" class="btn" style="padding:5px 10px;font-size:12px;">View</a>
                       </td>
