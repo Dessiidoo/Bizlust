@@ -253,7 +253,7 @@ export default function Landing() {
               asChild
               data-testid="button-start-trial-cta"
             >
-              <a href="/api/login">
+              <a href="/login">
                 <Rocket className="h-5 w-5 mr-2" />
                 Start 14-Day Free Trial
               </a>

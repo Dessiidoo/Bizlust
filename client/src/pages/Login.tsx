@@ -41,7 +41,8 @@ export default function Login() {
           title: isLogin ? "Login successful!" : "Registration successful!",
           description: `Welcome${isLogin ? ' back' : ''} to LeadPro!`,
         });
-        setLocation("/");
+        // Force a page refresh to ensure auth state is updated
+        window.location.href = "/";
       } else {
         const error = await response.json();
         toast({
