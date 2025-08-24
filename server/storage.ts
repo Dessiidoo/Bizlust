@@ -5,6 +5,8 @@ import {
   marketInsights,
   campaigns,
   analytics,
+  subscriptionPlans,
+  subscriptions,
   type User,
   type UpsertUser,
   type Company,
@@ -17,6 +19,10 @@ import {
   type InsertCampaign,
   type Analytics,
   type InsertAnalytics,
+  type SubscriptionPlan,
+  type InsertSubscriptionPlan,
+  type Subscription,
+  type InsertSubscription,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
@@ -25,6 +31,7 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserSubscription(userId: string, subscriptionData: Partial<Pick<User, 'squareCustomerId' | 'subscriptionTier' | 'subscriptionStatus' | 'subscriptionId' | 'subscriptionExpiresAt'>>): Promise<User | undefined>;
   
   // Company operations
   getCompanies(): Promise<Company[]>;
@@ -49,6 +56,16 @@ export interface IStorage {
   // Analytics
   getAnalyticsByUser(userId: string, startDate?: Date, endDate?: Date): Promise<Analytics[]>;
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
+  
+  // Subscription plans
+  getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
+  createSubscriptionPlan(plan: InsertSubscriptionPlan): Promise<SubscriptionPlan>;
+  getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined>;
+  
+  // Subscriptions
+  getUserSubscription(userId: string): Promise<Subscription | undefined>;
+  createSubscription(subscription: InsertSubscription): Promise<Subscription>;
+  updateSubscription(id: string, subscription: Partial<InsertSubscription>): Promise<Subscription | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -212,6 +229,60 @@ export class DatabaseStorage implements IStorage {
   async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
     const [analytic] = await db.insert(analytics).values(analyticsData).returning();
     return analytic;
+  }
+
+  // Subscription methods
+  async updateUserSubscription(userId: string, subscriptionData: Partial<Pick<User, 'squareCustomerId' | 'subscriptionTier' | 'subscriptionStatus' | 'subscriptionId' | 'subscriptionExpiresAt'>>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...subscriptionData,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    return await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.isActive, true)).orderBy(subscriptionPlans.priority);
+  }
+
+  async createSubscriptionPlan(planData: InsertSubscriptionPlan): Promise<SubscriptionPlan> {
+    const [plan] = await db.insert(subscriptionPlans).values(planData).returning();
+    return plan;
+  }
+
+  async getSubscriptionPlan(id: string): Promise<SubscriptionPlan | undefined> {
+    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, id));
+    return plan;
+  }
+
+  async getUserSubscription(userId: string): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, userId))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+    return subscription;
+  }
+
+  async createSubscription(subscriptionData: InsertSubscription): Promise<Subscription> {
+    const [subscription] = await db.insert(subscriptions).values(subscriptionData).returning();
+    return subscription;
+  }
+
+  async updateSubscription(id: string, subscriptionData: Partial<InsertSubscription>): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .update(subscriptions)
+      .set({
+        ...subscriptionData,
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptions.id, id))
+      .returning();
+    return subscription;
   }
 }
 

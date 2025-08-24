@@ -5,6 +5,8 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { generateLeadsForUser, getOutreachSuggestion } from "./services/leadService";
 import { generateMarketInsight } from "./ai/openai";
 import { insertLeadSchema, insertCompanySchema } from "@shared/schema";
+import { registerSubscriptionRoutes } from "./routes/subscriptions";
+import { requireSubscription, checkUsageLimit, attachSubscriptionInfo } from "./middleware/subscription";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -69,8 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lead generation route
-  app.post("/api/leads/generate", isAuthenticated, async (req: any, res) => {
+  // Lead generation route (Premium feature)
+  app.post("/api/leads/generate", isAuthenticated, attachSubscriptionInfo, checkUsageLimit('leads'), checkUsageLimit('aiCredits'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { targetIndustry, companySize } = req.body;
@@ -213,6 +215,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch dashboard data" });
     }
   });
+
+  // Register subscription routes
+  registerSubscriptionRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

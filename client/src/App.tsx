@@ -10,6 +10,7 @@ import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Leads from "@/pages/Leads";
 import Analytics from "@/pages/Analytics";
+import Pricing from "@/pages/Pricing";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,13 +18,17 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/pricing" component={Pricing} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/leads" component={Leads} />
           <Route path="/insights" component={Dashboard} />
           <Route path="/analytics" component={Analytics} />
+          <Route path="/pricing" component={Pricing} />
         </>
       )}
       {/* Fallback to 404 */}

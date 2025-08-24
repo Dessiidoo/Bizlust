@@ -37,6 +37,11 @@ export const users = pgTable("users", {
   companyName: varchar("company_name"),
   industry: varchar("industry"),
   companySize: varchar("company_size"),
+  squareCustomerId: varchar("square_customer_id"),
+  subscriptionTier: varchar("subscription_tier").default("free"),
+  subscriptionStatus: varchar("subscription_status").default("inactive"),
+  subscriptionId: varchar("subscription_id"),
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -102,6 +107,34 @@ export const analytics = pgTable("analytics", {
   metadata: jsonb("metadata"),
 });
 
+// Subscription plans
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  tier: varchar("tier").notNull(), // free, basic, premium
+  price: decimal("price").notNull().default("0"),
+  features: jsonb("features").notNull(),
+  maxLeads: integer("max_leads").default(0),
+  aiCredits: integer("ai_credits").default(0),
+  priority: integer("priority").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User subscription history
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  planId: varchar("plan_id").notNull().references(() => subscriptionPlans.id),
+  squareSubscriptionId: varchar("square_subscription_id"),
+  status: varchar("status").notNull().default("pending"), // pending, active, cancelled, expired
+  startDate: timestamp("start_date").defaultNow(),
+  endDate: timestamp("end_date"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   leads: many(leads),
@@ -146,6 +179,21 @@ export const analyticsRelations = relations(analytics, ({ one }) => ({
   }),
 }));
 
+export const subscriptionPlansRelations = relations(subscriptionPlans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+  plan: one(subscriptionPlans, {
+    fields: [subscriptions.planId],
+    references: [subscriptionPlans.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -179,6 +227,17 @@ export const insertAnalyticsSchema = createInsertSchema(analytics).omit({
   id: true,
 });
 
+export const insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -192,3 +251,7 @@ export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
