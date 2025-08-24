@@ -39,11 +39,11 @@ export default function Landing() {
                   size="lg" 
                   className="bg-yellow-400 text-gray-900 hover:bg-yellow-300 font-semibold"
                   asChild
-                  data-testid="button-start-trial"
+                  data-testid="button-get-started"
                 >
                   <a href="/login">
                     <Rocket className="h-5 w-5 mr-2" />
-                    Start Free Trial
+                    Get Started
                   </a>
                 </Button>
                 <Button 

@@ -122,12 +122,12 @@ export function Navigation() {
                         });
                         
                         if (response.ok) {
-                          // Clear any cached data and force refresh
-                          window.location.reload();
+                          // Redirect to landing page after logout
+                          window.location.href = '/';
                         }
                       } catch (error) {
                         console.error('Logout failed:', error);
-                        window.location.reload();
+                        window.location.href = '/';
                       }
                     }}
                     className="flex items-center w-full text-left px-2 py-1.5 text-sm"
