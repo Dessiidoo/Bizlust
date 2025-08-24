@@ -28,26 +28,26 @@ function Router() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route path="/login" component={Login} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/:rest*" component={NotFound} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/pricing" component={Pricing} />
-          <Route component={NotFound} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/leads" component={Leads} />
-          <Route path="/insights" component={Dashboard} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/pricing" component={Pricing} />
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path="/" component={Dashboard} />
+      <Route path="/leads" component={Leads} />
+      <Route path="/insights" component={Dashboard} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/:rest*" component={NotFound} />
     </Switch>
   );
 }
