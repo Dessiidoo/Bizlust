@@ -56,6 +56,12 @@ async function startServer() {
 }
 
 async function setupDatabase() {
+  // Skip database setup in production - should be handled during build/deployment
+  if (process.env.NODE_ENV === "production") {
+    log("Skipping database setup in production");
+    return;
+  }
+  
   try {
     log("Setting up database schema...");
     await execAsync("npx drizzle-kit push --force");
