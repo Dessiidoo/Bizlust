@@ -86,7 +86,7 @@ function setupAdminRoutes(app: any) {
   function requireAdmin(req: any, res: any, next: any) {
     if (!ADMIN_KEY) return res.status(500).send('Missing ADMIN_KEY');
     if (req.cookies?.admin === ADMIN_KEY) return next();
-    return res.status(401).send('Unauthorized');
+    return res.redirect('/admin/login');
   }
 
   app.get('/admin/login', (_req: any, res: any) => {
