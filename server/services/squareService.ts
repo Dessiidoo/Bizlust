@@ -12,8 +12,8 @@ let client: any = null;
 if (isSquareEnabled) {
   try {
     client = new SquareClient({
-      accessToken: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.NODE_ENV === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox
+      environment: process.env.NODE_ENV === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
+      accessToken: process.env.SQUARE_ACCESS_TOKEN
     });
   } catch (error) {
     console.warn('Square client initialization failed:', error);

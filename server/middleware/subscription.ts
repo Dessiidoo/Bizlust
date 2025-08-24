@@ -39,12 +39,12 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
 // Check if user has required subscription tier
 export const requireSubscription = (requiredTier?: string): RequestHandler => {
   return async (req: any, res, next) => {
-    if (!req.isAuthenticated()) {
+    if (!req.session?.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
 
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -113,7 +113,7 @@ export const requireSubscription = (requiredTier?: string): RequestHandler => {
 export const checkUsageLimit = (resource: 'leads' | 'aiCredits'): RequestHandler => {
   return async (req: any, res, next) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const tierInfo = req.user.subscriptionTier as SubscriptionTier;
 
       if (!tierInfo) {
@@ -178,9 +178,9 @@ function getTierPriority(tier: string): number {
 
 // Middleware to add subscription info to user object
 export const attachSubscriptionInfo: RequestHandler = async (req: any, res, next) => {
-  if (req.isAuthenticated() && req.user?.claims?.sub) {
+  if (req.session?.userId) {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const user = await storage.getUser(userId);
       
       if (user) {

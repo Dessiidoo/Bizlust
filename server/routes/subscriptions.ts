@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { squareService } from "../services/squareService";
 import { storage } from "../storage";
-import { isAuthenticated } from "../replitAuth";
+import { isAuthenticated } from "../auth";
 import { requireSubscription, checkUsageLimit, attachSubscriptionInfo } from "../middleware/subscription";
 
 export function registerSubscriptionRoutes(app: Express) {
@@ -19,7 +19,7 @@ export function registerSubscriptionRoutes(app: Express) {
   // Get user's current subscription info
   app.get("/api/subscription/current", isAuthenticated, attachSubscriptionInfo, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const subscription = await storage.getUserSubscription(userId);
 
@@ -39,7 +39,7 @@ export function registerSubscriptionRoutes(app: Express) {
   // Create Square customer and subscription
   app.post("/api/subscription/create", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { planId, paymentToken } = req.body;
 
       const user = await storage.getUser(userId);
@@ -106,7 +106,7 @@ export function registerSubscriptionRoutes(app: Express) {
   // Cancel subscription
   app.post("/api/subscription/cancel", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || !user.subscriptionId) {
@@ -137,7 +137,7 @@ export function registerSubscriptionRoutes(app: Express) {
   // Subscription usage info
   app.get("/api/subscription/usage", isAuthenticated, attachSubscriptionInfo, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const subscriptionInfo = req.user.subscriptionInfo;
 
       // Get current usage
