@@ -1,7 +1,11 @@
 import express from "express";
 import session from "express-session";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
+
+const execAsync = promisify(exec);
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? "5000");
@@ -23,6 +27,9 @@ app.use(express.urlencoded({ extended: true }));
 
 async function startServer() {
   try {
+    // Setup database schema first
+    await setupDatabase();
+    
     // Register API routes and get HTTP server
     const httpServer = await registerRoutes(app);
     
@@ -45,6 +52,17 @@ async function startServer() {
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
+  }
+}
+
+async function setupDatabase() {
+  try {
+    log("Setting up database schema...");
+    await execAsync("npx drizzle-kit push --force");
+    log("✅ Database schema setup complete");
+  } catch (error) {
+    log("⚠️ Database setup failed, but continuing (may be normal for first run)");
+    console.error("Database setup error:", error);
   }
 }
 
