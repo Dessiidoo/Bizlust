@@ -216,6 +216,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route - to set yourself as admin (only use once!)
+  app.post("/api/admin/make-admin", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Update user to admin tier with no expiration
+      const adminUser = await storage.updateUserSubscription(userId, {
+        subscriptionTier: "admin",
+        subscriptionStatus: "active",
+        subscriptionExpiresAt: null // No expiration for admin
+      });
+      
+      res.json({ 
+        message: "Successfully upgraded to admin", 
+        user: adminUser,
+        features: ["Unlimited leads", "Unlimited AI credits", "All features unlocked"]
+      });
+    } catch (error) {
+      console.error("Error setting admin:", error);
+      res.status(500).json({ message: "Failed to set admin status" });
+    }
+  });
+
   // Register subscription routes
   registerSubscriptionRoutes(app);
 

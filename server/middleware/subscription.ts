@@ -27,6 +27,12 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
     maxLeads: 1000,
     aiCredits: 200,
     features: ["Unlimited lead search", "Advanced AI insights", "Custom outreach", "Priority support", "Export capabilities"]
+  },
+  admin: {
+    tier: "admin",
+    maxLeads: 999999,
+    aiCredits: 999999,
+    features: ["All features", "Unlimited everything", "Admin access", "No restrictions"]
   }
 };
 
@@ -50,6 +56,12 @@ export const requireSubscription = (requiredTier?: string): RequestHandler => {
 
       if (!tierInfo) {
         return res.status(403).json({ message: "Invalid subscription tier" });
+      }
+
+      // Admin users bypass all restrictions
+      if (userTier === "admin") {
+        req.user.subscriptionTier = tierInfo;
+        return next();
       }
 
       // Check if subscription is active (for paid tiers)
@@ -108,6 +120,11 @@ export const checkUsageLimit = (resource: 'leads' | 'aiCredits'): RequestHandler
         return res.status(403).json({ message: "Subscription tier not found" });
       }
 
+      // Admin users bypass all limits
+      if (tierInfo.tier === "admin") {
+        return next();
+      }
+
       if (resource === 'leads') {
         const userLeads = await storage.getLeadsByUser(userId);
         if (userLeads.length >= tierInfo.maxLeads) {
@@ -154,6 +171,7 @@ function getTierPriority(tier: string): number {
     case 'free': return 1;
     case 'basic': return 2;
     case 'premium': return 3;
+    case 'admin': return 999; // Admin always has highest priority
     default: return 0;
   }
 }
