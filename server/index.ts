@@ -2,12 +2,49 @@ import express from "express";
 import session from "express-session";
 import { exec } from "child_process";
 import { promisify } from "util";
+import cookieParser from 'cookie-parser';
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 
 const execAsync = promisify(exec);
 
 const app = express();
+app.use(cookieParser());
+
+const ADMIN_KEY = process.env.ADMIN_KEY;
+
+function requireAdmin(req: any, res: any, next: any) {
+  if (!ADMIN_KEY) return res.status(500).send('Missing ADMIN_KEY');
+  if (req.cookies?.admin === ADMIN_KEY) return next();
+  return res.status(401).send('Unauthorized');
+}
+
+app.get('/admin/login', (_req, res) => {
+  res.send(`
+    <form method="POST" action="/admin/login" style="max-width:420px;margin:40px auto;font-family:system-ui">
+      <h3>LeadPro Admin</h3>
+      <input name="key" type="password" placeholder="Admin Key" style="width:100%;padding:10px" />
+      <button style="margin-top:10px;padding:10px 14px">Login</button>
+    </form>
+  `);
+});
+
+app.post('/admin/login', (req, res) => {
+  if (req.body?.key === ADMIN_KEY) {
+    res.cookie('admin', ADMIN_KEY, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 7*24*60*60*1000
+    });
+    return res.redirect('/admin');
+  }
+  return res.status(401).send('Invalid key');
+});
+
+app.get('/admin', requireAdmin, (_req, res) => {
+  res.send(`<h2>LeadPro Admin</h2><p>You're in. Build your controls here.</p>`);
+});
 const PORT = parseInt(process.env.PORT ?? "5000");
 
 // Configure session middleware  
