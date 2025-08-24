@@ -17,6 +17,11 @@ import Profile from "@/pages/Profile";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Clear cache if not authenticated
+  if (!isAuthenticated && !isLoading) {
+    queryClient.clear();
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
