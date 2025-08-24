@@ -48,8 +48,15 @@ app.get('/admin', requireAdmin, (_req, res) => {
 const PORT = parseInt(process.env.PORT ?? "5000");
 
 // Configure session middleware  
-import { getSession } from "./auth";
-app.use(getSession());
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -69,7 +76,6 @@ async function startServer() {
       log("Development server with Vite hot reload ready");
     } else {
       // Import serveStatic for production
-      log("Setting up production static file serving...");
       const { serveStatic } = await import("./vite");
       serveStatic(app);
       log("Production server serving static files ready");

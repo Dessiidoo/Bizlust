@@ -41,7 +41,7 @@ export default function Leads() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/login";
+        window.location.href = "/api/login";
       }, 500);
       return;
     }
@@ -71,7 +71,7 @@ export default function Leads() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/login";
+          window.location.href = "/api/login";
         }, 500);
         return;
       }
@@ -106,7 +106,7 @@ export default function Leads() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/login";
+          window.location.href = "/api/login";
         }, 500);
         return;
       }

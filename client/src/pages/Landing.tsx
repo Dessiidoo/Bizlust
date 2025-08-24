@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Navigation } from "@/components/layout/Navigation";
 import { 
   Brain, 
   Rocket, 
@@ -19,7 +18,23 @@ import {
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      {/* Navigation */}
+      <nav className="bg-background shadow-sm border-b border-border sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Brain className="h-8 w-8 text-primary mr-3" />
+              <span className="text-xl font-bold text-foreground">LeadPro</span>
+            </div>
+            <Button asChild data-testid="button-login">
+              <a href="/login" className="flex items-center">
+                <Brain className="h-4 w-4 mr-2" />
+                Get Started
+              </a>
+            </Button>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary via-blue-700 to-blue-800 text-white py-20">
@@ -39,11 +54,11 @@ export default function Landing() {
                   size="lg" 
                   className="bg-yellow-400 text-gray-900 hover:bg-yellow-300 font-semibold"
                   asChild
-                  data-testid="button-get-started"
+                  data-testid="button-start-trial"
                 >
                   <a href="/login">
                     <Rocket className="h-5 w-5 mr-2" />
-                    Get Started
+                    Start Free Trial
                   </a>
                 </Button>
                 <Button 

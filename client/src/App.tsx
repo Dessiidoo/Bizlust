@@ -17,11 +17,6 @@ import Profile from "@/pages/Profile";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Clear cache if not authenticated
-  if (!isAuthenticated && !isLoading) {
-    queryClient.clear();
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -33,27 +28,26 @@ function Router() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/login" component={Login} />
-        <Route path="/pricing" component={Pricing} />
-        <Route path="/:rest*" component={NotFound} />
-      </Switch>
-    );
-  }
-
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/leads" component={Leads} />
-      <Route path="/insights" component={Dashboard} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/pricing" component={Pricing} />
-      <Route path="/:rest*" component={NotFound} />
+      {!isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/pricing" component={Pricing} />
+          <Route component={Landing} />
+        </>
+      ) : (
+        <>
+          <Route path="/" component={Dashboard} />
+          <Route path="/leads" component={Leads} />
+          <Route path="/insights" component={Dashboard} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/profile" component={Profile} />
+          <Route path="/pricing" component={Pricing} />
+          <Route component={Dashboard} />
+        </>
+      )}
     </Switch>
   );
 }
