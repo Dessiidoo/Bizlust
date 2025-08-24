@@ -113,14 +113,21 @@ export function Navigation() {
                   <button 
                     onClick={async () => {
                       try {
-                        await fetch('/api/auth/logout', {
+                        const response = await fetch('/api/auth/logout', {
                           method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
                           credentials: 'include'
                         });
-                        window.location.href = '/';
+                        
+                        if (response.ok) {
+                          // Clear any cached data and force refresh
+                          window.location.reload();
+                        }
                       } catch (error) {
                         console.error('Logout failed:', error);
-                        window.location.href = '/';
+                        window.location.reload();
                       }
                     }}
                     className="flex items-center w-full text-left px-2 py-1.5 text-sm"
