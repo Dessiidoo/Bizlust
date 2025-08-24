@@ -38,7 +38,7 @@ async function startServer() {
     const httpServer = await registerRoutes(app);
     
     // Setup admin routes AFTER main routes
-    setupAdminRoutes(app);
+    await setupAdminRoutes(app);
     
     // Set up Vite development server or serve static files in production
     if (process.env.NODE_ENV === "development") {
@@ -79,12 +79,12 @@ async function setupDatabase() {
   }
 }
 
-// Admin route setup function
-function setupAdminRoutes(app: any) {
+// Admin route setup function  
+async function setupAdminRoutes(app: any) {
   const ADMIN_KEY = process.env.ADMIN_KEY;
   
   // Import storage for admin functions
-  const { storage } = require('./storage');
+  const { storage } = await import('./storage.js');
 
   function requireAdmin(req: any, res: any, next: any) {
     if (!ADMIN_KEY) return res.status(500).send('Missing ADMIN_KEY');
