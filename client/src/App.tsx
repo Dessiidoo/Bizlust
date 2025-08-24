@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Leads from "@/pages/Leads";
 import Analytics from "@/pages/Analytics";
 import Pricing from "@/pages/Pricing";
+import Profile from "@/pages/Profile";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/leads" component={Leads} />
           <Route path="/insights" component={Dashboard} />
           <Route path="/analytics" component={Analytics} />
+          <Route path="/profile" component={Profile} />
           <Route path="/pricing" component={Pricing} />
         </>
       )}

@@ -24,6 +24,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/auth/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { companyName, industry, companySize } = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(userId, {
+        companyName,
+        industry,
+        companySize
+      });
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Lead routes
   app.get("/api/leads", isAuthenticated, async (req: any, res) => {
     try {

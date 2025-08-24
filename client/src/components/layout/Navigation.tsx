@@ -27,6 +27,7 @@ const navigation = [
   { name: "Leads", href: "/leads", icon: Users },
   { name: "Market Intelligence", href: "/insights", icon: Target },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Profile", href: "/profile", icon: User },
   { name: "Pricing", href: "/pricing", icon: Target },
 ];
 
