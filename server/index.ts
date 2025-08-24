@@ -39,21 +39,37 @@ app.get('/admin/login', (_req, res) => {
 });
 
 app.post('/admin/login', (req, res) => {
-  console.log('Admin login attempt:');
-  console.log('- Received key:', req.body?.key);
-  console.log('- Expected key:', ADMIN_KEY);
-  console.log('- Keys match:', req.body?.key === ADMIN_KEY);
+  const receivedKey = req.body?.key;
+  const expectedKey = ADMIN_KEY;
+  const keysMatch = receivedKey === expectedKey;
   
-  if (req.body?.key === ADMIN_KEY) {
+  console.log('=== ADMIN LOGIN DEBUG ===');
+  console.log('Received key:', JSON.stringify(receivedKey));
+  console.log('Expected key:', JSON.stringify(expectedKey));
+  console.log('Keys match:', keysMatch);
+  console.log('Received key length:', receivedKey ? receivedKey.length : 'undefined');
+  console.log('Expected key length:', expectedKey ? expectedKey.length : 'undefined');
+  
+  if (keysMatch) {
     res.cookie('admin', ADMIN_KEY || '', {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: false, // Changed to false for development
+      sameSite: 'lax', // Changed to lax for development
       maxAge: 7*24*60*60*1000
     });
     return res.redirect('/admin');
   }
-  return res.status(401).send('Invalid key');
+  
+  // Return more detailed error for debugging
+  return res.status(401).send(`
+    <div style="font-family:system-ui;max-width:420px;margin:40px auto;">
+      <h3>Login Failed - Debug Info</h3>
+      <p>Received: "${receivedKey}" (length: ${receivedKey ? receivedKey.length : 'undefined'})</p>
+      <p>Expected: "${expectedKey}" (length: ${expectedKey ? expectedKey.length : 'undefined'})</p>
+      <p>Match: ${keysMatch}</p>
+      <a href="/admin/login">Try Again</a>
+    </div>
+  `);
 });
 
 app.get('/admin', requireAdmin, (_req, res) => {
