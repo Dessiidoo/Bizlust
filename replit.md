@@ -1,8 +1,8 @@
-# LeadVault AI
+# Prospect.ai
 
 ## Overview
 
-LeadVault AI is a comprehensive lead generation and sales intelligence platform that leverages artificial intelligence to help businesses identify, score, and convert prospects into customers. The application combines market intelligence, lead management, and analytics to provide a complete sales automation solution.
+Prospect.ai is a comprehensive lead generation and sales intelligence platform that leverages artificial intelligence to help businesses identify, score, and convert prospects into customers. The application combines market intelligence, lead management, and analytics to provide a complete sales automation solution.
 
 The platform features a modern React frontend with a Node.js/Express backend, utilizing AI-powered lead scoring and market insights to optimize sales processes. It includes user authentication via Replit Auth, PostgreSQL database storage, and integrates with OpenAI for intelligent lead analysis and recommendations.
 

@@ -24,7 +24,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Brain className="h-8 w-8 text-primary mr-3" />
-              <span className="text-xl font-bold text-foreground">LeadVault AI</span>
+              <span className="text-xl font-bold text-foreground">Prospect.ai</span>
             </div>
             <Button asChild data-testid="button-login">
               <a href="/api/login" className="flex items-center">
@@ -282,7 +282,7 @@ export default function Landing() {
             <div>
               <div className="flex items-center mb-4">
                 <Brain className="h-8 w-8 text-primary mr-3" />
-                <span className="text-xl font-bold">LeadVault AI</span>
+                <span className="text-xl font-bold">Prospect.ai</span>
               </div>
               <p className="text-gray-400 mb-4">
                 The AI-powered platform that transforms market intelligence into competitive advantage.
@@ -317,7 +317,7 @@ export default function Landing() {
           </div>
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 LeadVault AI. All rights reserved.</p>
+            <p>&copy; 2024 Prospect.ai. All rights reserved.</p>
           </div>
         </div>
       </footer>

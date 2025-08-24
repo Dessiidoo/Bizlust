@@ -53,7 +53,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Brain className="h-8 w-8 text-primary mr-3" />
-              <span className="text-xl font-bold text-foreground">LeadVault AI</span>
+              <span className="text-xl font-bold text-foreground">Prospect.ai</span>
             </Link>
           </div>
 
