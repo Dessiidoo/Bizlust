@@ -26,10 +26,15 @@ async function startServer() {
     // Register API routes and get HTTP server
     const httpServer = await registerRoutes(app);
     
-    // Set up Vite development server
+    // Set up Vite development server or serve static files in production
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, httpServer);
       log("Development server with Vite hot reload ready");
+    } else {
+      // Import serveStatic for production
+      const { serveStatic } = await import("./vite");
+      serveStatic(app);
+      log("Production server serving static files ready");
     }
 
     // Start the server
