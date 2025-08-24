@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Filter, Phone, ExternalLink } from "lucide-react";
+import { Mail, Filter, Phone, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Lead {
@@ -25,9 +25,10 @@ interface Lead {
 interface LeadsTableProps {
   leads: Lead[];
   onContactLead?: (leadId: string) => void;
+  onGenerateOutreach?: (lead: Lead) => void;
 }
 
-export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
+export function LeadsTable({ leads, onContactLead, onGenerateOutreach }: LeadsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredLeads = leads.filter(lead =>
@@ -123,11 +124,12 @@ export function LeadsTable({ leads, onContactLead }: LeadsTableProps) {
                       <div className="flex items-center space-x-2">
                         <Button 
                           size="sm" 
-                          onClick={() => onContactLead?.(lead.id)}
-                          data-testid={`button-contact-${lead.id}`}
+                          onClick={() => onGenerateOutreach?.(lead)}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                          data-testid={`button-generate-outreach-${lead.id}`}
                         >
-                          <Mail className="h-4 w-4 mr-1" />
-                          Contact
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate Email
                         </Button>
                         {lead.contactEmail && (
                           <Button variant="ghost" size="sm" asChild>

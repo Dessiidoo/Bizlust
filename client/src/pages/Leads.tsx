@@ -20,6 +20,7 @@ import {
   Target,
   Zap
 } from "lucide-react";
+import { OutreachModal } from "@/components/outreach/OutreachModal";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function Leads() {
@@ -28,6 +29,8 @@ export default function Leads() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("all");
   const [scoreFilter, setScoreFilter] = useState("all");
+  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [outreachModalOpen, setOutreachModalOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -79,6 +82,11 @@ export default function Leads() {
       });
     },
   });
+
+  const handleGenerateOutreach = (lead: any) => {
+    setSelectedLead(lead);
+    setOutreachModalOpen(true);
+  };
 
   const handleContactLead = async (leadId: string) => {
     try {
@@ -298,6 +306,7 @@ export default function Leads() {
           <LeadsTable 
             leads={filteredLeads} 
             onContactLead={handleContactLead}
+            onGenerateOutreach={handleGenerateOutreach}
           />
         )}
 
@@ -329,6 +338,13 @@ export default function Leads() {
             </CardContent>
           </Card>
         )}
+
+        {/* Outreach Modal */}
+        <OutreachModal
+          open={outreachModalOpen}
+          onOpenChange={setOutreachModalOpen}
+          lead={selectedLead}
+        />
       </div>
     </div>
   );
