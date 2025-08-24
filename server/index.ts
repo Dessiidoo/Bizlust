@@ -3,6 +3,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve the built frontend
+app.use(express.static(path.join(__dirname, "public")));
+
+// Fallback so React Router works
+app.get("*", (_, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -69,3 +82,4 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
   });
 })();
+
