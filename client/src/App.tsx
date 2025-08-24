@@ -16,9 +16,6 @@ import Profile from "@/pages/Profile";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  
-  // Debug logging
-  console.log('Router Debug:', { isAuthenticated, isLoading });
 
   if (isLoading) {
     return (
