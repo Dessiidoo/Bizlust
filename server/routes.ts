@@ -234,10 +234,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin route - to set yourself as admin (only use once!)
+  // Admin route - SECURED to specific email only
   app.post("/api/admin/make-admin", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const userEmail = req.user.claims.email;
+      
+      // SECURITY: Only allow admin access for the app owner
+      const ADMIN_EMAIL = "branch70@gmail.com"; // Your email address
+      
+      if (userEmail !== ADMIN_EMAIL) {
+        return res.status(403).json({ 
+          message: "Access denied. Admin privileges are restricted to the application owner.",
+          email: userEmail 
+        });
+      }
       
       // Update user to admin tier with no expiration
       const adminUser = await storage.updateUserSubscription(userId, {
