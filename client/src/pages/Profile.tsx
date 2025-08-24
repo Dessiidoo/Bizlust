@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Building2, User, Briefcase, Users, Home } from "lucide-react";
 import { Link } from "wouter";
+import { Navigation } from "@/components/layout/Navigation";
 
 const profileSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
@@ -132,53 +133,55 @@ export default function Profile() {
   const hasProfile = user?.companyName && user?.industry && user?.companySize;
 
   return (
-    <div className="p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <User className="h-8 w-8" />
-              Business Profile
-            </h1>
-            <Link href="/">
-              <Button variant="outline" size="sm" className="flex items-center gap-2" data-testid="link-homepage">
-                <Home className="h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="p-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                <User className="h-8 w-8" />
+                Business Profile
+              </h1>
+              <Link href="/">
+                <Button variant="outline" size="sm" className="flex items-center gap-2" data-testid="link-homepage">
+                  <Home className="h-4 w-4" />
+                  Back to Home
+                </Button>
+              </Link>
+            </div>
+            <p className="text-muted-foreground mt-2">
+              Help our AI understand your business so we can generate more targeted leads and insights.
+            </p>
           </div>
-          <p className="text-muted-foreground mt-2">
-            Help our AI understand your business so we can generate more targeted leads and insights.
-          </p>
-        </div>
 
-        {!hasProfile && (
-          <Card className="mb-6 border-orange-200 bg-orange-50">
+          {!hasProfile && (
+            <Card className="mb-6 border-orange-200 bg-orange-50">
+              <CardHeader>
+                <CardTitle className="text-orange-800 flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Complete Your Profile
+                </CardTitle>
+                <CardDescription className="text-orange-700">
+                  Your profile is incomplete. Complete it to get AI-powered leads tailored to your specific business needs.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
+          <Card>
             <CardHeader>
-              <CardTitle className="text-orange-800 flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Complete Your Profile
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Company Information
               </CardTitle>
-              <CardDescription className="text-orange-700">
-                Your profile is incomplete. Complete it to get AI-powered leads tailored to your specific business needs.
+              <CardDescription>
+                This information helps our AI generate leads that are the perfect fit for your business.
               </CardDescription>
             </CardHeader>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Company Information
-            </CardTitle>
-            <CardDescription>
-              This information helps our AI generate leads that are the perfect fit for your business.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="companyName"
@@ -268,24 +271,25 @@ export default function Profile() {
                 >
                   {updateProfileMutation.isPending ? "Saving..." : "Save Profile"}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        {hasProfile && (
-          <Card className="mt-6 border-green-200 bg-green-50">
-            <CardHeader>
-              <CardTitle className="text-green-800 flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Profile Complete
-              </CardTitle>
-              <CardDescription className="text-green-700">
-                Great! Your profile is complete. The AI will now generate leads specifically targeted to your {user?.industry || 'business'} business.
-              </CardDescription>
-            </CardHeader>
+                </form>
+              </Form>
+            </CardContent>
           </Card>
-        )}
+
+          {hasProfile && (
+            <Card className="mt-6 border-green-200 bg-green-50">
+              <CardHeader>
+                <CardTitle className="text-green-800 flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Profile Complete
+                </CardTitle>
+                <CardDescription className="text-green-700">
+                  Great! Your profile is complete. The AI will now generate leads specifically targeted to your {user?.industry || 'business'} business.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
