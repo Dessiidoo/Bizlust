@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Leads from "@/pages/Leads";
 import Analytics from "@/pages/Analytics";
@@ -21,6 +22,7 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
           <Route path="/pricing" component={Pricing} />
         </>
       ) : (

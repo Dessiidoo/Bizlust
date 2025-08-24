@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { generateLeadsForUser, getOutreachSuggestion } from "./services/leadService";
 import { generateMarketInsight } from "./ai/openai";
 import { insertLeadSchema, insertCompanySchema } from "@shared/schema";
@@ -10,23 +10,12 @@ import { requireSubscription, checkUsageLimit, attachSubscriptionInfo } from "./
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
+  // Profile routes
   app.put('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { companyName, industry, companySize } = req.body;
       
       const updatedUser = await storage.updateUserProfile(userId, {
@@ -45,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Lead routes
   app.get("/api/leads", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const leads = await storage.getLeadsByUser(userId);
       res.json(leads);
     } catch (error) {
@@ -56,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/leads", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const leadData = insertLeadSchema.parse({ ...req.body, userId });
       const lead = await storage.createLead(leadData);
       res.json(lead);
@@ -92,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Lead generation route (Premium feature)
   app.post("/api/leads/generate", isAuthenticated, attachSubscriptionInfo, checkUsageLimit('leads'), checkUsageLimit('aiCredits'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { targetIndustry, companySize } = req.body;
       
       const results = await generateLeadsForUser(userId, targetIndustry || "Technology", companySize || "Medium");
@@ -106,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Outreach suggestion route
   app.get("/api/leads/:id/outreach", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { id } = req.params;
       
       const suggestion = await getOutreachSuggestion(id, userId);
@@ -142,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Market insights routes
   app.get("/api/insights", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const insights = await storage.getMarketInsightsByUser(userId);
       res.json(insights);
     } catch (error) {
@@ -153,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/insights/generate", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const { targetMarkets } = req.body;
       
@@ -181,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes
   app.get("/api/analytics", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { startDate, endDate } = req.query;
       
       const analytics = await storage.getAnalyticsByUser(
@@ -199,7 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard summary route
   app.get("/api/dashboard", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const [leads, insights, analytics] = await Promise.all([
         storage.getLeadsByUser(userId),
@@ -237,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin route - SECURED to specific email only
   app.post("/api/admin/make-admin", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userEmail = req.user.claims.email;
       
       // SECURITY: Only allow admin access for the app owner

@@ -27,7 +27,7 @@ export default function Landing() {
               <span className="text-xl font-bold text-foreground">LeadPro</span>
             </div>
             <Button asChild data-testid="button-login">
-              <a href="/api/login" className="flex items-center">
+              <a href="/login" className="flex items-center">
                 <Brain className="h-4 w-4 mr-2" />
                 Get Started
               </a>
@@ -56,7 +56,7 @@ export default function Landing() {
                   asChild
                   data-testid="button-start-trial"
                 >
-                  <a href="/api/login">
+                  <a href="/login">
                     <Rocket className="h-5 w-5 mr-2" />
                     Start Free Trial
                   </a>
