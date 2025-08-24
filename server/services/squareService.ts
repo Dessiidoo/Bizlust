@@ -1,4 +1,4 @@
-import square from 'square';
+import { SquareClient, SquareEnvironment } from 'square';
 import { v4 as uuidv4 } from 'uuid';
 
 // Only require credentials in production or when actually using Square features
@@ -11,9 +11,9 @@ let client: any = null;
 
 if (isSquareEnabled) {
   try {
-    client = new square.Client({
+    client = new SquareClient({
       accessToken: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.NODE_ENV === 'production' ? square.Environment.Production : square.Environment.Sandbox
+      environment: process.env.NODE_ENV === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox
     });
   } catch (error) {
     console.warn('Square client initialization failed:', error);
