@@ -1,25 +1,20 @@
 import express from "express";
-import { registerRoutes } from "./routes";
-import { setupVite } from "./vite";
-import { log } from "./vite";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// ✅ Point to dist/public, not server/public
+app.use(express.static(path.join(__dirname, "public")));
 
-async function startServer() {
-  try {
-    const server = await registerRoutes(app);
-    await setupVite(app, server);
-    
-    server.listen(PORT, "0.0.0.0", () => {
-      log(`serving on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
+app.get("*", (_, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
-startServer();
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
