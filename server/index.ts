@@ -76,6 +76,7 @@ async function startServer() {
       log("Development server with Vite hot reload ready");
     } else {
       // Import serveStatic for production
+      log("Setting up production static file serving...");
       const { serveStatic } = await import("./vite");
       serveStatic(app);
       log("Production server serving static files ready");
