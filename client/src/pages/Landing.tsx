@@ -17,7 +17,7 @@ import {
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={{transform: 'none', backfaceVisibility: 'visible', willChange: 'auto'}}>
       {/* Navigation */}
       <nav className="bg-background shadow-sm border-b border-border fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,7 +37,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary via-blue-700 to-blue-800 text-white py-20 mt-16">
+      <section className="bg-primary text-white py-20 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
