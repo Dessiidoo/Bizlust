@@ -34,6 +34,21 @@ async function startServer() {
     // Setup database schema first
     await setupDatabase();
     
+    // Add test route BEFORE other routes
+    app.get('/test-plain', (req, res) => {
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Plain Test</title></head>
+        <body>
+          <h1>PLAIN HTML TEST</h1>
+          <p>This should appear only once - no React, no Vite processing</p>
+          <div style="height: 100px; background: green; margin: 20px 0;">Green block</div>
+        </body>
+        </html>
+      `);
+    });
+    
     // Register API routes and get HTTP server
     const httpServer = await registerRoutes(app);
     
