@@ -19,7 +19,7 @@ import {
   User,
   Settings
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthProvider";
 import { cn } from "@/lib/utils";
 
 const navigation = [
