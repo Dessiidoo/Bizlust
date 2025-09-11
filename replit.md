@@ -96,3 +96,11 @@ The AI service layer is designed to be modular and extensible, allowing for easy
 - **Node.js**: Runtime environment for server-side application
 
 The architecture is designed for scalability and maintainability, with clear separation of concerns between the frontend, backend, AI services, and data layer. The use of modern tools and frameworks ensures good developer experience while maintaining production-ready performance and security standards.
+
+## Setup
+
+### Environment Variables
+
+Configure the following environment variables before running the server:
+
+- `LEAD_SOURCE_URL`: Base URL for the external lead provider used to fetch potential leads. In development, this can be omitted to use built-in stub data instead of calling an external API.

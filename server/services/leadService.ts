@@ -98,17 +98,47 @@ async function fetchLeadsFromDataSource(
 ): Promise<ExternalLead[]> {
   const baseUrl = process.env.LEAD_SOURCE_URL;
   if (!baseUrl) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("LEAD_SOURCE_URL not configured, using stub data");
+      return getStubLeads(industry, companySize);
+    }
     throw new Error("LEAD_SOURCE_URL not configured");
   }
 
   const url = `${baseUrl}?industry=${encodeURIComponent(industry)}&size=${encodeURIComponent(companySize)}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Lead source responded with ${response.status}`);
-  }
 
-  const data = await response.json();
-  return (data.leads || []) as ExternalLead[];
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Lead source responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    return (data.leads || []) as ExternalLead[];
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Lead source request failed, using stub data", err);
+      return getStubLeads(industry, companySize);
+    }
+    throw err;
+  }
+}
+
+function getStubLeads(industry: string, companySize: string): ExternalLead[] {
+  return [
+    {
+      companyName: "Example Corp",
+      industry,
+      companySize,
+      website: "https://example.com",
+      location: "Remote",
+      description: `Sample lead for ${industry}`,
+      contactName: "Jane Doe",
+      contactEmail: "jane@example.com",
+      contactTitle: "CTO",
+      marketSignal: "Demo interest",
+    },
+  ];
 }
 
 // Adapter: map raw API lead to internal representation and persist
