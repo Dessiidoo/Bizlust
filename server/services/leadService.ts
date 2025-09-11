@@ -1,6 +1,24 @@
 import { storage } from "../storage";
-import { scoreLeadWithAI, generateMarketInsight, generateOutreachSuggestion } from "../ai/openai";
+import {
+  scoreLeadWithAI,
+  generateMarketInsight,
+  generateOutreachSuggestion,
+} from "../ai/openai";
 import type { InsertLead, InsertCompany } from "@shared/schema";
+
+interface ExternalLead {
+  companyName: string;
+  industry?: string;
+  companySize?: string;
+  website?: string;
+  location?: string;
+  description?: string;
+  contactName: string;
+  contactEmail: string;
+  contactTitle: string;
+  contactPhone?: string;
+  marketSignal?: string;
+}
 
 export interface LeadGenerationResult {
   leads: Array<{
@@ -23,9 +41,15 @@ export async function generateLeadsForUser(userId: string, targetIndustry: strin
     throw new Error("User not found");
   }
 
-  // This would typically integrate with external APIs like LinkedIn Sales Navigator, ZoomInfo, etc.
-  // For now, we'll generate AI-powered leads based on user profile
-  const mockLeadData = await generateMockLeadData(targetIndustry, companySize);
+  // Fetch potential leads from external data source
+  let apiLeadData: ExternalLead[] = [];
+  try {
+    apiLeadData = await fetchLeadsFromDataSource(targetIndustry, companySize);
+    console.log(`Fetched ${apiLeadData.length} leads from data source`);
+  } catch (err) {
+    console.error("Failed to fetch leads from external source", err);
+    throw new Error("Lead source unavailable");
+  }
   
   const results: LeadGenerationResult = {
     leads: [],
@@ -33,45 +57,13 @@ export async function generateLeadsForUser(userId: string, targetIndustry: strin
   };
 
   // Process each potential lead with AI scoring
-  for (const mockLead of mockLeadData) {
-    // Create company first
-    const company = await storage.createCompany({
-      name: mockLead.companyName,
-      industry: mockLead.industry,
-      size: mockLead.companySize,
-      website: mockLead.website,
-      location: mockLead.location,
-      description: mockLead.description
-    });
-
-    // Score the lead with AI
-    const aiResult = await scoreLeadWithAI(
-      company.name,
-      company.industry || "",
-      mockLead.contactTitle,
-      mockLead.marketSignal,
-      user.industry || ""
-    );
-
-    // Create the lead
-    const lead = await storage.createLead({
-      userId,
-      companyId: company.id,
-      contactName: mockLead.contactName,
-      contactEmail: mockLead.contactEmail,
-      contactTitle: mockLead.contactTitle,
-      contactPhone: mockLead.contactPhone,
-      score: aiResult.score,
-      marketSignal: mockLead.marketSignal,
-      source: "ai_generated"
-    });
-
-    results.leads.push({
-      company,
-      lead,
-      aiScore: aiResult.score,
-      reasoning: aiResult.reasoning
-    });
+  for (const apiLead of apiLeadData) {
+    try {
+      const adapted = await adaptLeadFromApi(apiLead, userId, user.industry || "");
+      results.leads.push(adapted);
+    } catch (err) {
+      console.error("Error processing lead from API", err);
+    }
   }
 
   // Generate market insights
@@ -99,43 +91,62 @@ export async function generateLeadsForUser(userId: string, targetIndustry: strin
   return results;
 }
 
-// Mock lead data generator - in production this would integrate with real APIs
-async function generateMockLeadData(industry: string, companySize: string) {
-  const industries = ["Technology", "Healthcare", "Finance", "Manufacturing", "Retail", "Education"];
-  const companySizes = ["Startup", "Small", "Medium", "Large", "Enterprise"];
-  const titles = ["CEO", "CTO", "VP of Sales", "Marketing Director", "Operations Manager", "Head of Product"];
-  const signals = [
-    "Hiring marketing team",
-    "New facility opening", 
-    "Scaling infrastructure",
-    "Digital transformation initiative",
-    "Expanding to new markets",
-    "Recently raised funding",
-    "Leadership changes",
-    "New product launch"
-  ];
+// Fetch leads from a real data source
+async function fetchLeadsFromDataSource(
+  industry: string,
+  companySize: string,
+): Promise<ExternalLead[]> {
+  const baseUrl = process.env.LEAD_SOURCE_URL;
+  if (!baseUrl) {
+    throw new Error("LEAD_SOURCE_URL not configured");
+  }
 
-  const mockCompanies = [
-    "Acme Corp", "Global Innovations", "FutureSoft", "TechFlow Solutions", "Innovation Labs",
-    "NextGen Systems", "Digital Dynamics", "Smart Solutions", "Advanced Analytics", "CloudTech"
-  ];
+  const url = `${baseUrl}?industry=${encodeURIComponent(industry)}&size=${encodeURIComponent(companySize)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Lead source responded with ${response.status}`);
+  }
 
-  const names = ["Sarah Johnson", "Michael Chen", "Emily Rodriguez", "David Kim", "Jessica Adams"];
-  const locations = ["New York, NY", "San Francisco, CA", "Chicago, IL", "Austin, TX", "Boston, MA"];
+  const data = await response.json();
+  return (data.leads || []) as ExternalLead[];
+}
 
-  return mockCompanies.slice(0, 5).map((company, index) => ({
-    companyName: company,
-    industry: industries[Math.floor(Math.random() * industries.length)],
-    companySize: companySizes[Math.floor(Math.random() * companySizes.length)],
-    website: `https://www.${company.toLowerCase().replace(/\s+/g, '')}.com`,
-    location: locations[index % locations.length],
-    description: `Leading ${industry.toLowerCase()} company focused on innovation and growth`,
-    contactName: names[index % names.length],
-    contactEmail: `${names[index % names.length].toLowerCase().replace(/\s+/g, '.')}@${company.toLowerCase().replace(/\s+/g, '')}.com`,
-    contactTitle: titles[Math.floor(Math.random() * titles.length)],
-    contactPhone: `+1-555-${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    marketSignal: signals[Math.floor(Math.random() * signals.length)]
-  }));
+// Adapter: map raw API lead to internal representation and persist
+async function adaptLeadFromApi(
+  apiLead: ExternalLead,
+  userId: string,
+  userIndustry: string,
+): Promise<{ company: InsertCompany; lead: InsertLead; aiScore: number; reasoning: string }> {
+  const company = await storage.createCompany({
+    name: apiLead.companyName,
+    industry: apiLead.industry,
+    size: apiLead.companySize,
+    website: apiLead.website,
+    location: apiLead.location,
+    description: apiLead.description,
+  });
+
+  const aiResult = await scoreLeadWithAI(
+    company.name,
+    company.industry || "",
+    apiLead.contactTitle,
+    apiLead.marketSignal || "",
+    userIndustry,
+  );
+
+  const lead = await storage.createLead({
+    userId,
+    companyId: company.id,
+    contactName: apiLead.contactName,
+    contactEmail: apiLead.contactEmail,
+    contactTitle: apiLead.contactTitle,
+    contactPhone: apiLead.contactPhone,
+    score: aiResult.score,
+    marketSignal: apiLead.marketSignal,
+    source: "external_api",
+  });
+
+  return { company, lead, aiScore: aiResult.score, reasoning: aiResult.reasoning };
 }
 
 export async function getOutreachSuggestion(leadId: string, userId: string) {
