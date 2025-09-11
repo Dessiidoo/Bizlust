@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthProvider";
 import { Navigation } from "@/components/layout/Navigation";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { LeadsChart } from "@/components/dashboard/LeadsChart";
