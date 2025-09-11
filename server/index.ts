@@ -286,7 +286,7 @@ async function setupAdminRoutes(app: any) {
 }
 
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
-// Kick off the server (only if run directly)
-if (require.main === module) {
+// Kick off the server (ESM safe)
+if (import.meta.url === `file://${process.argv[1]}`) {
   startServer();
 }
