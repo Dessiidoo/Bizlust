@@ -81,6 +81,13 @@ export default function Profile() {
     }
   }, [user, form]);
 
+  // Redirect to external site when profile is complete
+  React.useEffect(() => {
+    if (user?.companyName && user?.industry && user?.companySize) {
+      window.location.href = "https://jeosync.com";
+    }
+  }, [user]);
+
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
       const response = await fetch("/api/auth/profile", {
@@ -102,6 +109,7 @@ export default function Profile() {
         title: "Profile Updated",
         description: "Your business profile has been updated successfully. AI lead generation will now be more targeted to your business!",
       });
+      window.location.href = "https://jeosync.com";
     },
     onError: () => {
       toast({
