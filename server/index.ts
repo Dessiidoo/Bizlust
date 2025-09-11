@@ -285,8 +285,6 @@ async function setupAdminRoutes(app: any) {
   });
 }
 
-// ---- Health route (for Render) ----
-app.get("/", (_req, res) => res.status(200).send("ok"));
-
+app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 // Kick off the server
 startServer();
