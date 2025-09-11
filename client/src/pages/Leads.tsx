@@ -7,7 +7,6 @@ import { Navigation } from "@/components/layout/Navigation";
 import { LeadsTable } from "@/components/dashboard/LeadsTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,14 +22,48 @@ import {
 import { OutreachModal } from "@/components/outreach/OutreachModal";
 import { apiRequest } from "@/lib/queryClient";
 
+const industries = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Manufacturing",
+  "Retail",
+  "Education",
+  "Real Estate",
+  "Consulting",
+  "Marketing & Advertising",
+  "Legal Services",
+  "Construction",
+  "Transportation",
+  "Food & Beverage",
+  "Entertainment",
+  "Non-Profit",
+  "Government",
+  "Energy",
+  "Agriculture",
+  "Other",
+];
+
+const companySizes = [
+  "Solo/Freelancer (1)",
+  "Startup (2-10)",
+  "Small (11-50)",
+  "Medium (51-200)",
+  "Large (201-1000)",
+  "Enterprise (1000+)",
+];
+
 export default function Leads() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("all");
   const [scoreFilter, setScoreFilter] = useState("all");
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [outreachModalOpen, setOutreachModalOpen] = useState(false);
+  const [targetIndustry, setTargetIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [errors, setErrors] = useState<{ industry?: string; companySize?: string }>({});
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -82,6 +115,24 @@ export default function Leads() {
       });
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      const profile = user as any;
+      setTargetIndustry(profile.industry || "");
+      setCompanySize(profile.companySize || "");
+    }
+  }, [user]);
+
+  const handleGenerateLeads = () => {
+    const newErrors: { industry?: string; companySize?: string } = {};
+    if (!targetIndustry) newErrors.industry = "Industry is required";
+    if (!companySize) newErrors.companySize = "Company size is required";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    generateLeadsMutation.mutate({ targetIndustry, companySize });
+  };
 
   const handleGenerateOutreach = (lead: any) => {
     setSelectedLead(lead);
@@ -161,11 +212,54 @@ export default function Leads() {
               <p className="text-muted-foreground">Manage and track your high-quality prospects</p>
             </div>
             <div className="flex items-center space-x-3">
-              <Button 
-                onClick={() => generateLeadsMutation.mutate({ 
-                  targetIndustry: "Technology", 
-                  companySize: "Medium" 
-                })}
+              <div className="flex flex-col">
+                <Select
+                  value={targetIndustry}
+                  onValueChange={(value) => {
+                    setTargetIndustry(value);
+                    setErrors((e) => ({ ...e, industry: undefined }));
+                  }}
+                >
+                  <SelectTrigger className="w-40" data-testid="select-target-industry">
+                    <SelectValue placeholder="Industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industries.map((ind) => (
+                      <SelectItem key={ind} value={ind}>
+                        {ind}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.industry && (
+                  <span className="text-red-500 text-xs mt-1">{errors.industry}</span>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <Select
+                  value={companySize}
+                  onValueChange={(value) => {
+                    setCompanySize(value);
+                    setErrors((e) => ({ ...e, companySize: undefined }));
+                  }}
+                >
+                  <SelectTrigger className="w-40" data-testid="select-company-size">
+                    <SelectValue placeholder="Company Size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companySizes.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.companySize && (
+                  <span className="text-red-500 text-xs mt-1">{errors.companySize}</span>
+                )}
+              </div>
+              <Button
+                onClick={handleGenerateLeads}
                 disabled={generateLeadsMutation.isPending}
                 data-testid="button-generate-leads"
               >
@@ -324,10 +418,7 @@ export default function Leads() {
               </p>
               {(leads as any[])?.length === 0 && (
                 <Button 
-                  onClick={() => generateLeadsMutation.mutate({ 
-                    targetIndustry: "Technology", 
-                    companySize: "Medium" 
-                  })}
+                  onClick={handleGenerateLeads}
                   disabled={generateLeadsMutation.isPending}
                   data-testid="button-generate-first-leads"
                 >

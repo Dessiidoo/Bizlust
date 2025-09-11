@@ -83,8 +83,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id;
       const { targetIndustry, companySize } = req.body;
-      
-      const results = await generateLeadsForUser(userId, targetIndustry || "Technology", companySize || "Medium");
+
+      const industryToUse = targetIndustry || "Technology";
+      const sizeToUse = companySize || "Medium";
+
+      await storage.updateUserProfile(userId, {
+        industry: industryToUse,
+        companySize: sizeToUse
+      });
+
+      const results = await generateLeadsForUser(userId, industryToUse, sizeToUse);
       res.json(results);
     } catch (error) {
       console.error("Error generating leads:", error);
